@@ -2,12 +2,10 @@ import request from 'supertest';
 import { testDb } from '../../setup/setup-test-db';
 import type { Database } from 'sqlite';
 
-// Mock validation middleware
 jest.mock('../../../src/middleware/validation', () => ({
   validateRequest: (req: any, res: any, next: any) => next(),
 }));
 
-// Mock the connection module
 jest.mock('../../../src/database/connection', () => ({
   database: {},
   databaseReady: Promise.resolve(),
@@ -18,10 +16,8 @@ import app from '../../../src/app';
 let db: Database;
 
 beforeAll(async () => {
-  // Initialize test database
   db = await testDb.initialize();
 
-  // Replace the mocked database
   const connMod = require('../../../src/database/connection');
   connMod.database = {
     run: async (sql: string, params?: any[]) => db.run(sql, params),

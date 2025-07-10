@@ -75,9 +75,10 @@ export default function EventsList() {
   async function fetchCandidates() {
     try {
       const res = await axios.get('http://localhost:3001/api/candidates');
-      setCandidates(res.data);
+      setCandidates(res.data.data); // Extract the `data` field from the response
     } catch (e) {
-      console.error(`Error :: ${e}`);
+      console.error(`Error fetching candidates: ${e}`);
+      setCandidates([]); // Ensure `candidates` is always an array
     }
   }
 

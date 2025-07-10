@@ -2,12 +2,10 @@ import request from 'supertest';
 import { testDb } from '../../setup/setup-test-db';
 import type { Database } from 'sqlite';
 
-// Mock validation middleware
 jest.mock('../../../src/middleware/validation', () => ({
   validateRequest: (req: any, res: any, next: any) => next(),
 }));
 
-// Mock the connection module
 jest.mock('../../../src/database/connection', () => ({
   database: {},
   databaseReady: Promise.resolve(),
@@ -18,10 +16,8 @@ import app from '../../../src/app';
 let db: Database;
 
 beforeAll(async () => {
-  // Initialize test database
   db = await testDb.initialize();
 
-  // Replace the mocked database
   const connMod = require('../../../src/database/connection');
   connMod.database = {
     run: async (sql: string, params?: any[]) => db.run(sql, params),
@@ -32,7 +28,6 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  // Clean and seed data
   await db.exec('DELETE FROM candidates');
   await db.run(
     `
@@ -50,7 +45,7 @@ afterAll(async () => {
 describe('Candidate API - CRUD Operations', () => {
   describe('GET /api/candidates', () => {
     it('should return an empty list when no candidates exist', async () => {
-      await db.exec('DELETE FROM candidates'); // Ensure the database is empty
+      await db.exec('DELETE FROM candidates');
       const res = await request(app).get('/api/candidates');
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -179,7 +174,7 @@ describe('Candidate API - Pagination', () => {
   it('should return all candidates if no pagination parameters are provided', async () => {
     const res = await request(app).get('/api/candidates');
     expect(res.status).toBe(200);
-    expect(res.body.data).toHaveLength(7); // All candidates
+    expect(res.body.data).toHaveLength(7);
     expect(res.body.meta).toMatchObject({
       total: 7,
       page: 1,

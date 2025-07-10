@@ -4,7 +4,7 @@ import type { Database } from 'sqlite';
 
 // Mock validation middleware
 jest.mock('../../../src/middleware/validation', () => ({
-  validateRequest: (req: any, res: any, next: any) => next()
+  validateRequest: (req: any, res: any, next: any) => next(),
 }));
 
 // Mock the connection module
@@ -40,13 +40,15 @@ beforeEach(async () => {
   await db.exec('DELETE FROM candidates');
 
   // Create test data
-  await db.run(`
+  await db.run(
+    `
     INSERT INTO candidates (id, firstName, lastName, district, office) 
     VALUES (?, ?, ?, ?, ?)`,
     [1, 'Test', 'Candidate', 'Test District', 'Test Office']
   );
 
-  await db.run(`
+  await db.run(
+    `
     INSERT INTO events (id, candidateId, name, date, startTime, endTime, moneyRaised) 
     VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [TEST_EVENT_ID, 1, 'Test Event', '2023-08-15', '10:00', '12:00', INITIAL_MONEY]
@@ -60,7 +62,8 @@ afterAll(async () => {
 describe('Attendance API - CRUD Operations', () => {
   describe('GET /api/attendances', () => {
     it('should return a list of attendances', async () => {
-      await db.run(`
+      await db.run(
+        `
         INSERT INTO attendances (eventId, firstName, lastName, email, interestedInVolunteering, donationAmount) 
         VALUES (?, ?, ?, ?, ?, ?)`,
         [TEST_EVENT_ID, 'John', 'Doe', 'john@example.com', 1, 50]
@@ -74,14 +77,15 @@ describe('Attendance API - CRUD Operations', () => {
         firstName: 'John',
         lastName: 'Doe',
         email: 'john@example.com',
-        interestedInVolunteering: 1, // Match database representation
+        interestedInVolunteering: 1,
         donationAmount: 50,
       });
     });
 
     it('should return paginated attendances', async () => {
       for (let i = 0; i < 15; i++) {
-        await db.run(`
+        await db.run(
+          `
           INSERT INTO attendances (eventId, firstName, lastName, email, interestedInVolunteering, donationAmount) 
           VALUES (?, ?, ?, ?, ?, ?)`,
           [TEST_EVENT_ID, `First${i}`, `Last${i}`, `email${i}@example.com`, 1, i * 10]
@@ -101,7 +105,8 @@ describe('Attendance API - CRUD Operations', () => {
 
   describe('GET /api/attendances/:id', () => {
     it('should fetch an attendance by ID', async () => {
-      const result = await db.run(`
+      const result = await db.run(
+        `
         INSERT INTO attendances (eventId, firstName, lastName, email, interestedInVolunteering, donationAmount) 
         VALUES (?, ?, ?, ?, ?, ?)`,
         [TEST_EVENT_ID, 'Jane', 'Doe', 'jane@example.com', 1, 25]
@@ -170,7 +175,8 @@ describe('Attendance API - CRUD Operations', () => {
 
   describe('PUT /api/attendances/:id', () => {
     it('should update attendance and adjust event money', async () => {
-      const result = await db.run(`
+      const result = await db.run(
+        `
         INSERT INTO attendances (eventId, firstName, lastName, email, interestedInVolunteering, donationAmount) 
         VALUES (?, ?, ?, ?, ?, ?)`,
         [TEST_EVENT_ID, 'Update', 'User', 'update@example.com', 1, 30]
@@ -193,7 +199,6 @@ describe('Attendance API - CRUD Operations', () => {
 
       const event = await db.get('SELECT moneyRaised FROM events WHERE id = ?', [TEST_EVENT_ID]);
       expect(event.moneyRaised).toBe(INITIAL_MONEY + 20);
-
     });
 
     it('should return 404 when updating a non-existent attendance', async () => {
@@ -212,7 +217,8 @@ describe('Attendance API - CRUD Operations', () => {
 
   describe('DELETE /api/attendances/:id', () => {
     it('should delete attendance with donation and reduce event money', async () => {
-      const result = await db.run(`
+      const result = await db.run(
+        `
         INSERT INTO attendances (eventId, firstName, lastName, email, interestedInVolunteering, donationAmount) 
         VALUES (?, ?, ?, ?, ?, ?)`,
         [TEST_EVENT_ID, 'Del', 'User', 'del@example.com', 1, 75]
@@ -220,7 +226,10 @@ describe('Attendance API - CRUD Operations', () => {
 
       const attendanceId = result.lastID;
 
-      await db.run('UPDATE events SET moneyRaised = moneyRaised + ? WHERE id = ?', [75, TEST_EVENT_ID]);
+      await db.run('UPDATE events SET moneyRaised = moneyRaised + ? WHERE id = ?', [
+        75,
+        TEST_EVENT_ID,
+      ]);
 
       const response = await request(app).delete(`/api/attendances/${attendanceId}`);
       expect(response.status).toBe(204);
@@ -241,7 +250,8 @@ describe('Attendance API - Pagination', () => {
   beforeEach(async () => {
     await db.exec('DELETE FROM attendances');
     for (let i = 0; i < 15; i++) {
-      await db.run(`
+      await db.run(
+        `
         INSERT INTO attendances (eventId, firstName, lastName, email, interestedInVolunteering, donationAmount) 
         VALUES (?, ?, ?, ?, ?, ?)`,
         [TEST_EVENT_ID, `First${i}`, `Last${i}`, `email${i}@example.com`, 1, i * 10]
@@ -278,8 +288,7 @@ describe('Attendance API - Pagination', () => {
     expect(res.body.meta).toMatchObject({
       total: 15,
       page: 1,
-      limit: 10, // Default limit
+      limit: 10,
     });
   });
 });
-

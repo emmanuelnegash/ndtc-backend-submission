@@ -15,7 +15,6 @@ const VALID_ORDER_BY_COLUMNS = [
 ];
 
 export class EventController {
-  /** GET /api/events */
   async getAll(req: Request, res: Response) {
     const page = Math.max(parseInt(req.query.page as string) || 1, 1);
     const limit = Math.max(parseInt(req.query.limit as string) || 10, 1);
@@ -46,8 +45,6 @@ export class EventController {
         `,
         [limit, offset]
       );
-
-      // Fetch total count separately if no rows are returned
       const total =
         rows.length > 0
           ? rows[0].total
@@ -71,10 +68,8 @@ export class EventController {
       });
     }
   }
-
-  /** GET /api/events/:id */
   async getOne(req: Request, res: Response) {
-    const id = req.params.id; // Keep id as a string
+    const id = req.params.id;
     if (!Number.isInteger(Number(id)) || Number(id) <= 0) {
       return res.status(400).json({ error: 'Event ID required' });
     }
@@ -94,11 +89,8 @@ export class EventController {
     }
   }
 
-  /** POST /api/events */
   async create(req: Request, res: Response) {
     const { candidateId, name, date, startTime, endTime, moneyRaised = 0 } = req.body;
-
-    // Validation for required fields
     if (!candidateId || !name || !date || !startTime || !endTime) {
       logger.warn({ body: req.body }, 'Validation failed: missing required fields');
       return res
@@ -120,8 +112,6 @@ export class EventController {
       return res.status(500).json({ error: `Failed to create event: ${err.message}` });
     }
   }
-
-  /** PUT /api/events/:id */
   async update(req: Request, res: Response) {
     const id = req.params.id;
     const { candidateId, name, date, startTime, endTime, moneyRaised = 0 } = req.body;
@@ -156,7 +146,6 @@ export class EventController {
     }
   }
 
-  /** DELETE /api/events/:id */
   async delete(req: Request, res: Response) {
     const id = req.params.id;
     if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {

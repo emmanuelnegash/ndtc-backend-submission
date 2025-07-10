@@ -8,13 +8,13 @@
         "frontend"
     ],
     "scripts": {
-        "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-        "dev:backend": "cd backend && npm run dev",
-        "dev:frontend": "cd frontend && npm run dev",
-        "build": "npm run build:backend && npm run build:frontend",
-        "build:backend": "cd backend && npm run build",
-        "build:frontend": "cd frontend && npm run build",
-        "start": "cd backend && npm start"
+        "dev": "concurrently -k \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
+        "dev:backend": "npm run dev --workspace=backend",
+        "dev:frontend": "npm run dev --workspace=frontend",
+        "build": "npm run build --workspace=backend && npm run build --workspace=frontend",
+        "build:backend": "npm run build --workspace=backend",
+        "build:frontend": "npm run build --workspace=frontend",
+        "start": "npm start --workspace=backend"
     },
     "devDependencies": {
         "@types/jest": "^30.0.0",
@@ -27,5 +27,18 @@
     "dependencies": {
         "autoprefixer": "^10.4.21",
         "tailwindcss": "^4.1.11"
+    },
+    "backend": {
+        "scripts": {
+            "dev": "nodemon src/server.ts",
+            "build": "tsc",
+            "start": "node dist/server.js",
+            "start:prod": "NODE_ENV=production node dist/server.js",
+            "test": "NODE_ENV=test jest",
+            "test:watch": "NODE_ENV=test jest --watch",
+            "test:coverage": "NODE_ENV=test jest --coverage",
+            "db:backup": "ts-node scripts/backup-db.ts",
+            "db:info": "ts-node scripts/db-info.ts"
+        }
     }
 }

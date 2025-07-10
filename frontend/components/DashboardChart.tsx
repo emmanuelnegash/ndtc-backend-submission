@@ -49,10 +49,12 @@ export default function DashboardChart() {
   async function fetchCandidates() {
     try {
       const res = await fetch('http://localhost:3001/api/candidates');
-      const data = await res.json();
-      setCandidates(data);
+      const response = await res.json();
+      console.log('API Response:', response); // Debug the response
+      setCandidates(response.data); // Set `candidates` to the `data` field
     } catch (e) {
-      console.error(`Error :: ${e}`);
+      console.error(`Error fetching candidates: ${e}`);
+      setCandidates([]);
     }
   }
 
@@ -73,14 +75,17 @@ export default function DashboardChart() {
     if (selectedCandidate) {
       fetch(`http://localhost:3001/api/events?candidateId=${selectedCandidate}`)
         .then(res => res.json())
-        .then(events => {
+        .then(response => {
+          const events = response.data || []; // Extract the `data` field or default to an empty array
           setCandidateEvents(events);
-          Promise.all(events.map((ev: any) =>
-            fetch(`http://localhost:3001/api/attendances`).then(res => res.json()).then(attendances => {
-              const total = attendances.filter((a: any) => a.eventId === ev.id).reduce((sum: number, a: any) => sum + (a.donationAmount || 0), 0);
-              return { eventName: ev.name, total };
-            })
-          )).then(setEventDonations);
+          Promise.all(Array.isArray(events) ? events.map((ev: any) =>
+            fetch(`http://localhost:3001/api/attendances`)
+              .then(res => res.json())
+              .then(attendances => {
+                const total = Array.isArray(attendances) ? attendances.filter((a: any) => a.eventId === ev.id).reduce((sum: number, a: any) => sum + (a.donationAmount || 0), 0) : 0;
+                return { eventName: ev.name, total };
+              })
+          ) : []).then(setEventDonations);
         });
     } else {
       setCandidateEvents([]);

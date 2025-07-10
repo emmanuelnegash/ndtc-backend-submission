@@ -4,7 +4,6 @@ import { Volunteer } from '../models/Volunteer';
 import { logger } from '../utils/logger';
 
 export class VolunteerController {
-  /** GET /api/volunteers?page=&limit= */
   async getAll(req: Request, res: Response) {
     const page = Math.max(parseInt(req.query.page as string) || 1, 1);
     const limit = Math.max(parseInt(req.query.limit as string) || 10, 1);
@@ -37,8 +36,6 @@ export class VolunteerController {
       return res.status(500).json({ error: `Failed to fetch volunteers: ${err.message}` });
     }
   }
-
-  /** GET /api/volunteers/:id */
   async getOne(req: Request, res: Response) {
     const { id } = req.params;
     logger.debug({ volunteerId: id }, 'Fetching single volunteer');
@@ -58,20 +55,16 @@ export class VolunteerController {
       return res.status(500).json({ error: `Failed to fetch volunteer: ${err.message}` });
     }
   }
-
-  /** POST /api/volunteers */
   async create(req: Request, res: Response) {
     const { firstName, lastName, email, role, candidateId } = req.body;
     logger.debug({ body: req.body }, 'Creating volunteer');
 
-    // Collect missing fields with detailed error messages
     const errors = [];
     if (!firstName) errors.push({ field: 'firstName', message: 'First name is required' });
     if (!lastName) errors.push({ field: 'lastName', message: 'Last name is required' });
     if (!email) errors.push({ field: 'email', message: 'Valid email is required' });
     if (!role) errors.push({ field: 'role', message: 'Role is required' });
 
-    // Return validation error if any fields are missing
     if (errors.length > 0) {
       logger.warn({ errors }, 'Validation failed');
       return res.status(400).json({ error: 'Validation failed', details: errors });
@@ -93,8 +86,6 @@ export class VolunteerController {
       return res.status(500).json({ error: `Failed to create volunteer: ${err.message}` });
     }
   }
-
-  /** PUT /api/volunteers/:id */
   async update(req: Request, res: Response) {
     const { id } = req.params;
     const { firstName, lastName, email, role, candidateId } = req.body;
@@ -120,8 +111,6 @@ export class VolunteerController {
       return res.status(500).json({ error: `Failed to update volunteer: ${err.message}` });
     }
   }
-
-  /** DELETE /api/volunteers/:id */
   async delete(req: Request, res: Response) {
     const { id } = req.params;
     if (!id) {

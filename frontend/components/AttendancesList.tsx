@@ -76,9 +76,10 @@ export default function AttendancesList() {
   async function fetchEvents() {
     try {
       const res = await axios.get('http://localhost:3001/api/events');
-      setEvents(res.data);
+      setEvents(res.data.data || []); // Extract the `data` field or default to an empty array
     } catch (e) {
-      console.error(e);
+      console.error(`Error fetching events: ${e}`);
+      setEvents([]); // Ensure `events` is always an array
     }
   }
 

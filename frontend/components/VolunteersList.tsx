@@ -53,9 +53,10 @@ export default function VolunteersList() {
     setLoading(true);
     try {
       const res = await axios.get('http://localhost:3001/api/volunteers');
-      setVolunteers(res.data);
+      setVolunteers(res.data.data || []); // Extract the `data` field or default to an empty array
     } catch (e) {
-      console.error(`Error :: ${e}`);
+      console.error(`Error fetching volunteers: ${e}`);
+      setVolunteers([]); // Ensure `volunteers` is always an array
     } finally {
       setLoading(false);
     }
@@ -64,9 +65,10 @@ export default function VolunteersList() {
   async function fetchCandidates() {
     try {
       const res = await axios.get('http://localhost:3001/api/candidates');
-      setCandidates(res.data);
+      setCandidates(res.data.data); // Extract the `data` field from the response
     } catch (e) {
-      console.error(`Error :: ${e}`);
+      console.error(`Error fetching candidates: ${e}`);
+      setCandidates([]); // Ensure `candidates` is always an array
     }
   }
 

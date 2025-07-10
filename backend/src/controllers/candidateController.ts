@@ -13,7 +13,6 @@ const VALID_ORDER_BY_COLUMNS = [
 ];
 
 export class CandidateController {
-  /** GET /api/candidates */
   async getAll(req: Request, res: Response) {
     const page = Math.max(parseInt(req.query.page as string) || 1, 1);
     const limit = Math.max(parseInt(req.query.limit as string) || 10, 1);
@@ -61,7 +60,6 @@ export class CandidateController {
     }
   }
 
-  /** GET /api/candidates/:id */
   async getById(req: Request, res: Response) {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id <= 0) {
@@ -81,7 +79,6 @@ export class CandidateController {
     }
   }
 
-  /** POST /api/candidates */
   async create(req: Request, res: Response) {
     const { firstName, lastName, district, office } = req.body;
     if (![firstName, lastName, district, office].every((v) => typeof v === 'string' && v.trim())) {
@@ -104,7 +101,6 @@ export class CandidateController {
     }
   }
 
-  /** PUT /api/candidates/:id */
   async update(req: Request, res: Response) {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id <= 0) {
@@ -135,8 +131,6 @@ export class CandidateController {
       return res.status(500).json({ error: `Failed to update candidate: ${err.message}` });
     }
   }
-
-  /** DELETE /api/candidates/:id */
   async delete(req: Request, res: Response) {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id <= 0) {

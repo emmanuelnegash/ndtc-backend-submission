@@ -3,7 +3,6 @@ import { database } from '../database/connection';
 import { logger } from '../utils/logger';
 
 export class AttendanceController {
-  /** GET /api/attendances */
   async getAll(req: Request, res: Response) {
     const page = Math.max(parseInt(req.query.page as string) || 1, 1);
     const limit = Math.max(parseInt(req.query.limit as string) || 10, 1);
@@ -14,7 +13,6 @@ export class AttendanceController {
       'Fetching attendances with pagination'
     );
     try {
-      // Query to fetch attendances with total count
       const rows = await database.all(
         `
         SELECT
@@ -50,8 +48,6 @@ export class AttendanceController {
       });
     }
   }
-
-  /** GET /api/attendances/:id */
   async getOne(req: Request, res: Response) {
     const { id } = req.params;
     logger.debug({ attendanceId: id }, 'Fetching single attendance');
@@ -72,8 +68,6 @@ export class AttendanceController {
       });
     }
   }
-
-  /** POST /api/attendances */
   async create(req: Request, res: Response) {
     const {
       eventId,
@@ -87,7 +81,6 @@ export class AttendanceController {
 
     logger.debug({ body: req.body }, 'Attempting to create attendance');
 
-    // Validate required fields
     if (
       !eventId ||
       !firstName ||
@@ -101,8 +94,6 @@ export class AttendanceController {
           'Missing required fields: eventId, firstName, lastName, email, interestedInVolunteering',
       });
     }
-
-    // validation for negative donations
     if (typeof donationAmount !== 'number' || donationAmount < 0) {
       logger.warn({ donationAmount }, 'Validation failed: invalid donation amount');
       return res.status(400).json({ error: 'Donation must be a non-negative number' });
@@ -148,8 +139,6 @@ export class AttendanceController {
       });
     }
   }
-
-  /** PUT /api/attendances/:id */
   async update(req: Request, res: Response) {
     const { id } = req.params;
     logger.debug({ attendanceId: id, body: req.body }, 'Updating attendance');
@@ -181,7 +170,6 @@ export class AttendanceController {
         donationAmount = existing.donationAmount,
       } = req.body;
 
-      // Update attendance record
       await database.run(
         `UPDATE attendances
            SET firstName = ?, lastName = ?, email = ?,
@@ -197,8 +185,6 @@ export class AttendanceController {
           id,
         ]
       );
-
-      // Adjust event moneyRaised if donation changed
       const diff = donationAmount - existing.donationAmount;
       if (diff !== 0) {
         await database.run('UPDATE events SET moneyRaised = moneyRaised + ? WHERE id = ?', [
@@ -224,8 +210,6 @@ export class AttendanceController {
       });
     }
   }
-
-  /** DELETE /api/attendances/:id */
   async delete(req: Request, res: Response) {
     const { id } = req.params;
     logger.debug({ attendanceId: id }, 'Attempting to delete attendance');
