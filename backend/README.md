@@ -35,6 +35,11 @@ npm start
 - **Role-based access control** for `/admin/protected` using `admin` role.
 - Logging with `pino` logger.
 - Health check endpoint at `/health`.
+- ✅ **Persistent Database Support**
+  - File-based SQLite database for development/production environments
+  - Data survives application restarts
+  - Uses `:memory:` for tests, configurable file path via `DB_FILE` environment variable
+  - Database files stored in [`backend/data/`](backend/data/) directory
 
 ## API Endpoints
 
@@ -196,94 +201,144 @@ npx jest tests/unit/middlewares/authMiddleware.test.ts
 - Logging enhanced with `pino` for structured logs.
 - Error handling improved for client-friendly responses.
 
-## Deployment Plan
+---
+
+## Production Deployment Plan
 
 ### Overview
 
-This application is designed for deployment using Docker, Terraform, and CI/CD pipelines. Below is the deployment plan:
+This application is designed for cloud-native deployment using containerization, infrastructure as code, and automated CI/CD pipelines for reliable production workloads with enterprise-grade authentication and scalability.
 
-### Docker Setup
+### Deployment Architecture
 
-1. **Dockerfile**:
-   - Containerizes the Node.js application.
-   - Uses a production-ready Node.js image.
-   - Exposes port `3001`.
+```
+Internet → ALB → ECS Fargate → RDS PostgreSQL
+                       ↓
+               CloudWatch Logs & Monitoring
+                       ↓
+            Amazon Cognito (SSO & User Pools)
+```
 
-2. **Docker Compose**:
-   - Orchestrates the API and PostgreSQL database.
-   - Ensures network isolation between services.
-   - Persists PostgreSQL data using volumes.
+### Deployment Workflow
 
-### Infrastructure Provisioning
+#### 1. Containerization Strategy
 
-1. **Terraform**:
-   - Provisions AWS resources:
-     - EC2 instance for the API server.
-     - RDS PostgreSQL for the database.
-     - VPC and security groups for secure networking.
+- **Docker**: Multi-stage builds for optimized production images
+- **Base Image**: Node.js Alpine for minimal attack surface
+- **Security**: Non-root user, dependency vulnerability scanning
+- **Environment**: Configurable via AWS Secrets Manager
 
-2. **Commands**:
-   ```bash
-   terraform init
-   terraform plan
-   terraform apply
-   ```
+#### 2. Infrastructure Provisioning (Terraform)
 
-### CI/CD Pipeline
+- **Cloud Platform**: AWS with infrastructure as code
+- **Compute**: ECS Fargate for serverless container orchestration
+- **Database**: RDS PostgreSQL with Multi-AZ deployment
+- **Authentication**: Amazon Cognito User Pools for SSO integration
+- **Networking**: VPC with private subnets and security groups
+- **Storage**: Encrypted EBS volumes and RDS encryption at rest
 
-1. **GitHub Actions**:
-   - Automates testing, building, and deployment.
-   - Example workflow:
+#### 3. Authentication & Authorization Evolution
 
-     ```yaml
-     name: CI/CD Pipeline
+- **Phase 1 (Current)**: JWT-based authentication with hardcoded credentials
+- **Phase 2 (Production)**: Amazon Cognito User Pools integration
+- **Phase 3 (Enterprise)**: SAML/OIDC SSO with corporate identity providers
+- **Features**: MFA, password policies, account recovery, user management
 
-     on:
-       push:
-         branches:
-           - main
+#### 4. CI/CD Pipeline (GitHub Actions)
 
-     jobs:
-       build-and-deploy:
-         runs-on: ubuntu-latest
+- **Trigger**: Automated on push to main branch
+- **Testing**: Unit tests, integration tests, security scanning
+- **Build**: Multi-stage Docker builds with layer caching
+- **Deploy**: Blue-green deployment with automatic rollback
+- **Monitoring**: Deployment notifications and health checks
 
-         steps:
-           - uses: actions/checkout@v3
+#### 5. Database Strategy
 
-           - name: Set up Node.js
-             uses: actions/setup-node@v3
-             with:
-               node-version: 18
+- **Development**: File-based SQLite with persistent storage
+- **Production**: Amazon RDS PostgreSQL with automated backups
+- **Scaling**: Read replicas and connection pooling
+- **Security**: Encryption, VPC isolation, IAM database authentication
 
-           - name: Install dependencies and run tests
-             run: |
-               npm install
-               npm run build
-               npm test
+#### 6. Monitoring & Observability
 
-           - name: Build Docker image
-             run: docker build -t my-app:latest .
+- **Health Checks**: Comprehensive application and database health endpoints
+- **Logging**: Structured JSON logs with CloudWatch integration
+- **Metrics**: Custom application metrics and AWS CloudWatch dashboards
+- **Alerting**: CloudWatch alarms for performance and error thresholds
 
-           - name: Deploy to server
-             uses: appleboy/ssh-action@master
-             with:
-               host: ${{ secrets.SERVER_IP }}
-               username: ubuntu
-               key: ${{ secrets.SSH_KEY }}
-               script: |
-                 cd /var/www/campaign-tracker
-                 git pull origin main
-                 docker-compose down
-                 docker-compose up -d --build
-     ```
+### Future Scalability Features
 
-### Security Hardening
+#### Amazon Cognito Integration
 
-- JWT-based authentication and role-based access control.
-- `helmet` middleware for secure HTTP headers.
-- Secure CORS configuration.
-- PostgreSQL database not publicly exposed.
+```typescript
+// Future authentication with Cognito User Pools
+const cognitoConfig = {
+  userPoolId: process.env.AWS_COGNITO_USER_POOL_ID,
+  clientId: process.env.AWS_COGNITO_CLIENT_ID,
+  region: process.env.AWS_REGION,
+};
+
+// SSO Support with SAML/OIDC providers
+// - Active Directory integration
+// - Google Workspace SSO
+// - Microsoft Azure AD
+// - Custom SAML providers
+```
+
+#### RDS PostgreSQL Production Setup
+
+```bash
+# Multi-AZ deployment for high availability
+# Read replicas for scaling read operations
+# Automated backups with point-in-time recovery
+# Performance Insights for query optimization
+# Connection pooling with PgBouncer
+```
+
+### Quick Deployment Commands
+
+```bash
+# Local development with persistent data
+npm run dev
+
+# Infrastructure deployment
+terraform init && terraform plan && terraform apply
+
+# Application deployment via GitHub Actions
+git push origin main  # Triggers automated CI/CD
+
+# Manual deployment (if needed)
+docker build -t campaign-tracker .
+aws ecr get-login-password | docker login --username AWS
+docker push $ECR_REPOSITORY:latest
+```
+
+### Environment Configuration
+
+**Development**: SQLite file database, debug logging, basic JWT auth  
+**Staging**: RDS PostgreSQL, structured logs, Cognito integration  
+**Production**: Multi-AZ RDS, CloudWatch monitoring, enterprise SSO
+
+### Security & Compliance
+
+- **Authentication**: Cognito User Pools with MFA
+- **Authorization**: Role-based access control (RBAC)
+- **Data Protection**: Encryption at rest and in transit
+- **Network Security**: VPC isolation and security groups
+- **Compliance**: SOC 2, GDPR-ready user data handling
+- **Monitoring**: AWS CloudTrail for audit logging
+
+### Technology Stack Alignment
+
+This deployment plan leverages key technologies from the job description:
+
+- **AWS Services**: ECS, RDS, Cognito, CloudWatch, Secrets Manager
+- **CI/CD**: GitHub Actions for automated testing and deployment
+- **Infrastructure as Code**: Terraform for repeatable deployments
+- **Containerization**: Docker for consistent environments
+- **Database**: PostgreSQL for production-grade data persistence
+- **Authentication**: Enterprise SSO capabilities with Cognito
+
+This approach ensures enterprise-grade reliability, security, and scalability while maintaining development simplicity and operational efficiency.
 
 ---
-
-Let me know if you need further details or additional sections!
