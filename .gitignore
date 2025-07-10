@@ -160,3 +160,7 @@ coverage/
 
 # Local development
 .local
+
+.db-shm
+.db-wal
+.db
