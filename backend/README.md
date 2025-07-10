@@ -151,6 +151,13 @@ curl 'http://localhost:3001/api/candidates?page=1&limit=10'
 
 ## Running Tests
 
+### Testing Framework
+
+- **Jest**: JavaScript testing framework for unit and integration tests
+- **Supertest**: HTTP assertion library for API endpoint testing
+- **Coverage**: Comprehensive test coverage reporting
+- **Test Types**: Unit tests, integration tests, and end-to-end API testing
+
 ### Integration tests:
 
 ```bash
@@ -180,6 +187,23 @@ npx jest tests/unit/controllers/volunteerController.test.ts
 ```bash
 npx jest tests/unit/middlewares/roleMiddleware.test.ts
 npx jest tests/unit/middlewares/authMiddleware.test.ts
+```
+
+### Run all tests:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run specific test suite
+npm run test:unit
+npm run test:integration
 ```
 
 ## Sample Data Generation
