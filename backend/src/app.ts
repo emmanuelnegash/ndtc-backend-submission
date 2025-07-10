@@ -53,7 +53,6 @@ function setupApiRoutes(app: express.Application) {
   app.use('/api/attendances', attendanceRoutes);
 }
 
-/** -- Health Check -- */
 function setupHealthRoute(app: express.Application) {
   app.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });

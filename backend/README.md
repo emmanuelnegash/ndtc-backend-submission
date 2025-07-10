@@ -195,3 +195,95 @@ npx jest tests/unit/middlewares/authMiddleware.test.ts
 - Pagination params available on all GET collections.
 - Logging enhanced with `pino` for structured logs.
 - Error handling improved for client-friendly responses.
+
+## Deployment Plan
+
+### Overview
+
+This application is designed for deployment using Docker, Terraform, and CI/CD pipelines. Below is the deployment plan:
+
+### Docker Setup
+
+1. **Dockerfile**:
+   - Containerizes the Node.js application.
+   - Uses a production-ready Node.js image.
+   - Exposes port `3001`.
+
+2. **Docker Compose**:
+   - Orchestrates the API and PostgreSQL database.
+   - Ensures network isolation between services.
+   - Persists PostgreSQL data using volumes.
+
+### Infrastructure Provisioning
+
+1. **Terraform**:
+   - Provisions AWS resources:
+     - EC2 instance for the API server.
+     - RDS PostgreSQL for the database.
+     - VPC and security groups for secure networking.
+
+2. **Commands**:
+   ```bash
+   terraform init
+   terraform plan
+   terraform apply
+   ```
+
+### CI/CD Pipeline
+
+1. **GitHub Actions**:
+   - Automates testing, building, and deployment.
+   - Example workflow:
+
+     ```yaml
+     name: CI/CD Pipeline
+
+     on:
+       push:
+         branches:
+           - main
+
+     jobs:
+       build-and-deploy:
+         runs-on: ubuntu-latest
+
+         steps:
+           - uses: actions/checkout@v3
+
+           - name: Set up Node.js
+             uses: actions/setup-node@v3
+             with:
+               node-version: 18
+
+           - name: Install dependencies and run tests
+             run: |
+               npm install
+               npm run build
+               npm test
+
+           - name: Build Docker image
+             run: docker build -t my-app:latest .
+
+           - name: Deploy to server
+             uses: appleboy/ssh-action@master
+             with:
+               host: ${{ secrets.SERVER_IP }}
+               username: ubuntu
+               key: ${{ secrets.SSH_KEY }}
+               script: |
+                 cd /var/www/campaign-tracker
+                 git pull origin main
+                 docker-compose down
+                 docker-compose up -d --build
+     ```
+
+### Security Hardening
+
+- JWT-based authentication and role-based access control.
+- `helmet` middleware for secure HTTP headers.
+- Secure CORS configuration.
+- PostgreSQL database not publicly exposed.
+
+---
+
+Let me know if you need further details or additional sections!
