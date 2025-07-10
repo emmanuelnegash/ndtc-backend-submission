@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { VolunteerController } from '../controllers/volunteerController';
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 import { validateRequest } from '../middleware/validation';
 
 const router = Router();
@@ -13,8 +13,12 @@ const volunteerValidation = [
   body('role').notEmpty().withMessage('Role is required'),
 ];
 
-router.get('/', volunteerController.getAll);
-router.post('/', volunteerValidation, validateRequest, volunteerController.create);
-router.put('/:id', volunteerValidation, validateRequest, volunteerController.update);
+const idValidation = [param('id').isInt({ gt: 0 }).withMessage('Valid volunteer ID is required')];
 
-export default router; 
+router.get('/', volunteerController.getAll);
+router.get('/:id', idValidation, validateRequest, volunteerController.getOne);
+router.post('/', volunteerValidation, validateRequest, volunteerController.create);
+router.put('/:id', idValidation, volunteerValidation, validateRequest, volunteerController.update);
+router.delete('/:id', idValidation, validateRequest, volunteerController.delete);
+
+export default router;

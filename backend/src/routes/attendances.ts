@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AttendanceController } from '../controllers/attendanceController';
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 import { validateRequest } from '../middleware/validation';
 
 const router = Router();
@@ -13,8 +13,14 @@ const attendanceValidation = [
   body('email').isEmail().withMessage('Valid email is required'),
 ];
 
-router.get('/', attendanceController.getAll);
-router.post('/', attendanceValidation, validateRequest, attendanceController.create);
-router.delete('/:id', attendanceController.delete);
+const idValidation = [
+  param('id').isInt({ gt: 0 }).withMessage('Valid attendance ID is required'),
+];
 
-export default router; 
+router.get('/', attendanceController.getAll);
+router.get('/:id', idValidation, validateRequest, attendanceController.getOne);
+router.post('/', attendanceValidation, validateRequest, attendanceController.create);
+router.put('/:id', idValidation, attendanceValidation, validateRequest, attendanceController.update);
+router.delete('/:id', idValidation, validateRequest, attendanceController.delete);
+
+export default router;
