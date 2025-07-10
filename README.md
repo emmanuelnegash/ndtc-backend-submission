@@ -71,10 +71,8 @@ Currently, our application has limited functionality but would benefit from addi
 - Data recovery for accidentally deleted data
 - Add authentication and role-based access control (admin/user separation):
   - Right now, anyone can stumble upon the `/admin` dashboard. Add some basic authentication so we can control access to that page and also be able to "upgrade" a user to an admin
-- Accessibility improvements (ARIA labels, keyboard navigation)
 - A way to bulk import candidates, events, volunteers, and attendances (e.g., CSV, JSON):
   - We should also be able to create an export PDF or print-out
-- Dark mode toggle and theme customization
 - Create your own feature!
 
 ## Production Deployment Plan

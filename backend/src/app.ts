@@ -7,9 +7,23 @@ import adminRoutes, { generateSampleData } from './routes/admin';
 import volunteerRoutes from './routes/volunteers';
 import attendanceRoutes from './routes/attendances';
 import { databaseReady } from './database/connection';
+import pinoHttp from 'pino-http';
+import { logger } from './utils/logger';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+app.use(
+  pinoHttp({
+    logger,
+    // only log method+url and statusCode instead of the full req/res objects
+    serializers: {
+      req: (req) => ({ method: req.method, url: req.url }),
+      res: (res) => ({ statusCode: res.statusCode })
+    }
+  })
+);
+
 
 app.use(helmet());
 app.use(cors());
